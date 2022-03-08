@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10万条数据渲染</title>
+</head>
+<style>
+    * {
+        padding: 0;
+        margin: 0;
+    }
+
+    #container {
+        height: 100vh;
+        overflow: auto;
+    }
+
+    .sunshine {
+        display: flex;
+        padding: 10px;
+    }
+
+    img {
+        width: 150px;
+        height: 150px;
+    }
+</style>
+
+<body>
+    <div id="container">
+    </div>
+    <script src="./index.js"></script>
+    <script>
+        // 【参考链接】https://juejin.cn/post/7031923575044964389
+        // 【方案一】setTimeout + 分页渲染  437ms
+        // async function renderList() {
+        //     console.time('执行');
+        //     const list = await getList()
+        //     // 总长度
+        //     const total = list.length
+        //     // 一次性解析多少条数据
+        //     const limit = 200
+        //     // 初始页码
+        //     const page = 0
+        //     // 总页码
+        //     const totalPage = total / limit
+
+        //     const render = (page) => {
+        //         // 当前页码超过总页码，则停止执行
+        //         if (page >= totalPage) return
+
+        //         // 建立
+        //         setTimeout(() => {
+        //             // 按照200页数，每次间隔初始页码
+        //             const pageStart = page * limit
+
+        //             for(let i = pageStart; i < pageStart + limit; i++) {
+        //                 const div = document.createElement('div')
+        //                 const item = list[i]
+
+        //                 div.innerHTML = `<img src="${item.src}" /><span>${item.text}</span>`
+        //                 container.appendChild(div)
+        //             }
+        //         }, 0)
+        //         render(page + 1)
+        //         console.timeEnd('执行');
+        //     }
+
+        //     render(page)
+        // }
+
+        // renderList()
+
+
+        // 【方案二】requestAnmiationFrame + 分页渲染  340ms
+        // 【优势】requestAnimationFrame会减少重排次数，提高渲染性能（更少的的cpu，gpu和内存使用量）
+        // 【扩展】requestAnimationFrame Vs setTimeout 区别：requestAnimationFrame跟随系统屏幕刷新频率，而setTimeout手动配置，会存在丢帧现象。
+        async function renderList() {
+            console.time('执行')
+            const list = await getList()
+            // 总长度
+            const total = list.length
+            // 一次性解析多少条数据
+            const limit = 200
+            // 初始页码
+            const page = 0
+            // 总页码
+            const totalPage = total / limit
+
+            const render = (page) => {
+                // 当前页码超过总页码，则停止执行
+                if (page >= totalPage) return
+
+                // 建立
+                requestAnimationFrame(() => {
+                    // 按照200页数，每次间隔初始页码
+                    const pageStart = page * limit
+
+                    for (let i = pageStart; i < pageStart + limit; i++) {
+                        const div = document.createElement('div')
+                        const item = list[i]
+
+                        div.innerHTML = `<img src="${item.src}" /><span>${item.text}</span>`
+                        container.appendChild(div)
+                    }
+                    render(page + 1)
+                })
+            }
+
+            render(page)
+            console.timeEnd('执行')
+        }
+
+        renderList()
+    </script>
+</body>
+
+</html>
